@@ -1,7 +1,9 @@
 class Hangman
+  @@word = ''
   def start
     introduction()
     flag = true
+
     while flag == true
     selected = gets.chomp
       if selected == "1"
@@ -29,7 +31,57 @@ TEXT
   end
 
   def new_game
-    puts "New"
+    contents = File.open("words.csv") #mute ko na lnag rin ako? 
+    get_words(contents)
+    asking_text()
+
+    flag = true
+    while flag == true
+      guess = gets.chomp
+      if guess.length == 1 && guess.match?(/[[:alpha:]]/)
+        check_guess(guess)
+        flag = false
+      else
+        puts "Type one letter:"
+      end
+    end
+  end
+
+  def check_guess(guess)
+    word_array = @@word.chars
+    print word_array
+    if word_array.include?(guess)
+      #find the index of the guessed letter and print it dun sa -----. 
+    else
+      
+    end
+  end
+
+  def asking_text
+    puts multi = <<-TEXT 
+Guess the random word, it has #{@@word.length} letters:\n
+    TEXT
+
+    for i in 1..@@word.length do
+    print "-"
+    end
+
+    puts multi2 = <<-TEXT
+\n\nGuess one(1) letter.
+You can also type 'save' or 'exit' to leave the game.
+    TEXT
+  end
+
+  def get_words(contents)
+    all = []
+
+    contents.each do |i|
+      if i.length() >= 5 && i.length() <= 12
+        all.append(i.chop)
+      end
+    end
+
+    @@word = all.sample
   end
 
   def load_game
