@@ -1,5 +1,6 @@
 class Hangman
   @@word = ''
+  @@attempt = 10
   def start
     introduction()
     flag = true
@@ -31,30 +32,84 @@ TEXT
   end
 
   def new_game
-    contents = File.open("words.csv") #mute ko na lnag rin ako? 
+    contents = File.open("words.csv") 
     get_words(contents)
     asking_text()
 
+    letter_guessed = []
+    print @@word
+    blank_words = Array.new(@@word.length, "-")
+
+    while @@attempt > 0
+      puts multi2 = <<-TEXT
+\n\nGuess one(1) letter. You have #{@@attempt} attempt/s left
+You can also type 'save' or 'exit' to leave the game.
+Guessed letters #{letter_guessed}
+TEXT
+
+      guess = gets.chomp
+      if letter_guessed.include?(guess)
+          print "\n\e[31mLetter already guessed. Type another letter\e[0m"
+      else
+        if guess.length == 1 && guess.match?(/[[:alpha:]]/)
+          check_guess(guess, blank_words)
+        else
+          puts "Type one letter:"
+        end
+        letter_guessed.append(guess)
+      end
+    end
+    out_of_lives()
+  end
+
+  def repeat(arr)
     flag = true
     while flag == true
       guess = gets.chomp
-      if guess.length == 1 && guess.match?(/[[:alpha:]]/)
-        check_guess(guess)
-        flag = false
+      if arr.include?(guess)
+        print "Type another letter: "
       else
-        puts "Type one letter:"
+        flag = false
       end
     end
   end
 
-  def check_guess(guess)
+  def check_guess(guess, blank_words)
     word_array = @@word.chars
-    print word_array
+    val = word_array.detect { |i| word_array.count(i) > 1}
+
+    if guess == val
+      word_array.each_with_index do |letter, idx|
+        if letter == val
+          blank_words[idx] = letter
+        end
+      end
+    end
+
     if word_array.include?(guess)
       #find the index of the guessed letter and print it dun sa -----. 
+      #what if there are 2 or more letters to print
+      guessed_letter_index = @@word.index(guess)
+      blank_words[guessed_letter_index] = guess
+
+      print_this(blank_words)
     else
-      
+      if @@attempt == 0
+        out_of_lives()
+      end
+      print_this(blank_words)
+      @@attempt -= 1
     end
+  end
+
+  def out_of_lives
+    puts "\nYou lost! There are no more guesses left."
+    exit
+  end
+
+  def print_this(arr)
+    puts ""
+    arr.each { |i| print i}
   end
 
   def asking_text
@@ -63,13 +118,8 @@ Guess the random word, it has #{@@word.length} letters:\n
     TEXT
 
     for i in 1..@@word.length do
-    print "-"
-    end
-
-    puts multi2 = <<-TEXT
-\n\nGuess one(1) letter.
-You can also type 'save' or 'exit' to leave the game.
-    TEXT
+      print "-"
+      end
   end
 
   def get_words(contents)
