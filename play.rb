@@ -49,6 +49,10 @@ TEXT
 
       guess = gets.chomp
 
+      if guess == 'save'
+        file_create()
+      end
+
       if letter_guessed.include?(guess)
           print "\n\e[31mLetter already guessed. Type another letter\e[0m"
       else
@@ -63,6 +67,16 @@ TEXT
       end
     end
     out_of_lives()
+  end
+
+  def file_create() ## create a file, the file should save the game
+    puts "Enter filename"
+    filename = gets.chomp
+
+    Dir.mkdir('files') unless Dir.exist?('files')
+
+    File.open(filename, 'w')
+    exit
   end
 
   def check_answer(arr)
@@ -86,8 +100,6 @@ TEXT
     end
 
     if word_array.include?(guess)
-      #find the index of the guessed letter and print it dun sa -----. 
-      #what if there are 2 or more letters to print
       guessed_letter_index = @@word.index(guess)
       blank_words[guessed_letter_index] = guess
 
