@@ -37,14 +37,14 @@ TEXT
     asking_text()
 
     letter_guessed = []
-    print @@word
     blank_words = Array.new(@@word.length, "-")
+    print @@word
 
     while @@attempt > 0
       puts multi2 = <<-TEXT
 \n\nGuess one(1) letter. You have #{@@attempt} attempt/s left
 You can also type 'save' or 'exit' to leave the game.
-Guessed letters #{letter_guessed}
+Guessed letters #{letter_guessed.to_s}
 TEXT
 
       guess = gets.chomp
@@ -52,35 +52,30 @@ TEXT
           print "\n\e[31mLetter already guessed. Type another letter\e[0m"
       else
         if guess.length == 1 && guess.match?(/[[:alpha:]]/)
+          check_answer()
           check_guess(guess, blank_words)
+          letter_guessed.append(guess)
         else
           puts "Type one letter:"
         end
-        letter_guessed.append(guess)
       end
     end
     out_of_lives()
   end
 
-  def repeat(arr)
-    flag = true
-    while flag == true
-      guess = gets.chomp
-      if arr.include?(guess)
-        print "Type another letter: "
-      else
-        flag = false
-      end
-    end
+  def check_answer()
+
   end
 
   def check_guess(guess, blank_words)
     word_array = @@word.chars
-    val = word_array.detect { |i| word_array.count(i) > 1}
 
-    if guess == val
+    val = word_array.select { |e| word_array.count(e) > 1 }.uniq
+
+    if val.include?(guess) 
+      one_letter = val.select { |a| a == guess}
       word_array.each_with_index do |letter, idx|
-        if letter == val
+        if letter == one_letter.join("")
           blank_words[idx] = letter
         end
       end
@@ -126,8 +121,9 @@ Guess the random word, it has #{@@word.length} letters:\n
     all = []
 
     contents.each do |i|
-      if i.length() >= 5 && i.length() <= 12
-        all.append(i.chop)
+      n = i.chop
+      if n.length() >= 5 && n.length() <= 12
+        all.append(n)
       end
     end
 
