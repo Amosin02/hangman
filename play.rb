@@ -44,16 +44,18 @@ TEXT
       puts multi2 = <<-TEXT
 \n\nGuess one(1) letter. You have #{@@attempt} attempt/s left
 You can also type 'save' or 'exit' to leave the game.
-Guessed letters #{letter_guessed.to_s}
+Guessed letters #{letter_guessed.join(" ")}
 TEXT
 
       guess = gets.chomp
+
       if letter_guessed.include?(guess)
           print "\n\e[31mLetter already guessed. Type another letter\e[0m"
       else
         if guess.length == 1 && guess.match?(/[[:alpha:]]/)
-          check_answer()
           check_guess(guess, blank_words)
+          check_answer(blank_words)
+
           letter_guessed.append(guess)
         else
           puts "Type one letter:"
@@ -63,8 +65,10 @@ TEXT
     out_of_lives()
   end
 
-  def check_answer()
-
+  def check_answer(arr)
+    if arr.join("") == @@word
+      congratulations()
+    end
   end
 
   def check_guess(guess, blank_words)
@@ -89,22 +93,41 @@ TEXT
 
       print_this(blank_words)
     else
-      if @@attempt == 0
-        out_of_lives()
-      end
       print_this(blank_words)
       @@attempt -= 1
     end
   end
 
+  def play_again
+    puts n = <<-TEXT
+Would you like to play again?
+
+[1] yes 
+[any key] no
+
+    TEXT
+
+    ans = gets.chomp
+    if ans == "1"
+      start()
+    else
+      exit
+    end
+  end
+
   def out_of_lives
-    puts "\nYou lost! There are no more guesses left."
-    exit
+    puts "\n\nYou lost! There are no more guesses left. The word was: #{@@word}"
+    play_again()
   end
 
   def print_this(arr)
     puts ""
     arr.each { |i| print i}
+  end
+
+  def congratulations() #winning word
+    puts "\n\nYou guessed the word!"
+    play_again()
   end
 
   def asking_text
