@@ -1,7 +1,9 @@
+require 'yaml'
+
 class Hangman
-  @@word = ''
-  @@attempt = 10
   def start
+    @@word = ''
+    @@attempt = 10
     introduction()
     flag = true
 
@@ -40,21 +42,30 @@ TEXT
     blank_words = Array.new(@@word.length, "-")
     print @@word
 
-    while @@attempt > 0
+    puts ""
+    whole_game(letter_guessed, blank_words)
+  end
+
+  def whole_game(letter_guessed, blank_words)
+    while @@attempt > 0 # needs letter_guessed, blank_words
       puts multi2 = <<-TEXT
-\n\nGuess one(1) letter. You have #{@@attempt} attempt/s left
+\nGuess one(1) letter. You have #{@@attempt} attempt/s left
 You can also type 'save' or 'exit' to leave the game.
-Guessed letters #{letter_guessed.join(" ")}
+Guessed letters: #{letter_guessed.join(" ")}
 TEXT
 
       guess = gets.chomp
 
       if guess == 'save'
-        file_create()
+        file_create(blank_words, letter_guessed)
+      end
+
+      if guess == 'exit'
+        exit
       end
 
       if letter_guessed.include?(guess)
-          print "\n\e[31mLetter already guessed. Type another letter\e[0m"
+          print "\n\e[31mLetter already guessed. Type another letter\e[0m\n"
       else
         if guess.length == 1 && guess.match?(/[[:alpha:]]/)
           check_guess(guess, blank_words)
@@ -69,14 +80,16 @@ TEXT
     out_of_lives()
   end
 
-  def file_create() ## create a file, the file should save the game
+  def file_create(blank_words, letter_guessed) ## create a file, the file should save the game
     puts "Enter filename"
     filename = gets.chomp
 
     Dir.mkdir('files') unless Dir.exist?('files')
 
-    File.open(filename, 'w')
-    exit
+    save = [@@attempt, @@word, blank_words, letter_guessed]
+
+    File.open("#{filename}.yml","w") { |file| file.write(save.to_yaml) }
+    play_again()
   end
 
   def check_answer(arr)
@@ -135,10 +148,11 @@ Would you like to play again?
   def print_this(arr)
     puts ""
     arr.each { |i| print i}
+    puts ""
   end
 
   def congratulations() #winning word
-    puts "\n\nYou guessed the word!"
+    puts "\nYou guessed the word!"
     play_again()
   end
 
@@ -166,7 +180,23 @@ Guess the random word, it has #{@@word.length} letters:\n
   end
 
   def load_game
-    puts "Load"
+    puts "\nFiles \n#{Dir.glob("*.yml").join("\n")}"
+
+    puts "\nEnter filename"
+    filename = gets.chomp
+
+    continue = YAML.load(File.read("#{filename}.yml"))
+
+    blank_words = []
+    letter_guessed = []
+
+    @@attempt = continue[0]
+    @@word = continue[1]
+    blank_words += (continue[2])
+    letter_guessed += (continue[3])
+
+    puts "\n#{blank_words.join("")}"
+    whole_game(letter_guessed, blank_words)
   end
 end
 
