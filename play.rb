@@ -4,6 +4,7 @@ class Hangman
   def start
     @@word = ''
     @@attempt = 10
+    @@filename = ''
     introduction()
     flag = true
 
@@ -40,7 +41,6 @@ TEXT
 
     letter_guessed = []
     blank_words = Array.new(@@word.length, "-")
-    print @@word
 
     puts ""
     whole_game(letter_guessed, blank_words)
@@ -82,13 +82,13 @@ TEXT
 
   def file_create(blank_words, letter_guessed) ## create a file, the file should save the game
     puts "Enter filename"
-    filename = gets.chomp
+    @@filename = gets.chomp
 
     Dir.mkdir('files') unless Dir.exist?('files')
 
     save = [@@attempt, @@word, blank_words, letter_guessed]
 
-    File.open("#{filename}.yml","w") { |file| file.write(save.to_yaml) }
+    File.open("files/#{@@filename}.yml","w") { |file| file.write(save.to_yaml) }
     play_again()
   end
 
@@ -152,6 +152,9 @@ Would you like to play again?
   end
 
   def congratulations() #winning word
+    if @@filename != ""
+      File.delete("files/#{@@filename}.yml")
+    end
     puts "\nYou guessed the word!"
     play_again()
   end
@@ -180,12 +183,17 @@ Guess the random word, it has #{@@word.length} letters:\n
   end
 
   def load_game
-    puts "\nFiles \n#{Dir.glob("*.yml").join("\n")}"
+    save_files = Dir.glob("files/*.yml")#.join("\n")
+    puts "\nFilenames:"
+
+    save_files.each do |i| 
+      puts "#{i.delete_prefix("files/").delete_suffix(".yml")}"
+    end
 
     puts "\nEnter filename"
-    filename = gets.chomp
+    @@filename = gets.chomp
 
-    continue = YAML.load(File.read("#{filename}.yml"))
+    continue = YAML.load(File.read("files/#{@@filename}.yml"))
 
     blank_words = []
     letter_guessed = []
